@@ -1,9 +1,10 @@
 import torch
-from transformers import LlamaForCausalLM, AutoTokenizer
+from transformers import LlamaForCausalLM, AutoTokenizer, AutoConfig
 from llama_recipes.configs import train_config as TRAIN_CONFIG
 
 train_config = TRAIN_CONFIG()
-train_config.model_name = "meta-llama/Meta-Llama-3.1-8B"
+# train_config.model_name = "meta-llama/Meta-Llama-3.1-8B" # pulls llama from hf
+train_config.model_name = "./meta-llama-chess" # pull locally
 train_config.num_epochs = 1
 train_config.run_validation = False
 train_config.gradient_accumulation_steps = 4
@@ -16,12 +17,13 @@ train_config.batching_strategy = "packing"
 train_config.output_dir = "meta-llama-chess"
 
 import wandb
-wandb_run = wandb.init(project="chess-gpt", config=train_config)
+wandb_run = wandb.init(project="chess-gpt", name="8-9-2024", config=train_config)
 
 from transformers import BitsAndBytesConfig
 config = BitsAndBytesConfig(
     load_in_8bit=True,
 )
+
 
 model = LlamaForCausalLM.from_pretrained(
             train_config.model_name,
@@ -32,6 +34,8 @@ model = LlamaForCausalLM.from_pretrained(
             torch_dtype=torch.float16,
         )
 
+
+config = AutoConfig.from_pretrained(train_config.model_name)
 tokenizer = AutoTokenizer.from_pretrained(train_config.model_name)
 tokenizer.pad_token = tokenizer.eos_token
 
@@ -98,5 +102,8 @@ results = train(
     wandb_run=wandb_run,
 )
 
+print("Saving Models: ", train_config.output_dir)
+tokenizer.save_pretrained(train_config.output_dir)
+config.save_pretrained(train_config.output_dir)
 model.save_pretrained(train_config.output_dir)
 
