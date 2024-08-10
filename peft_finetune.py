@@ -95,24 +95,32 @@ optimizer = optim.AdamW(
         )
 scheduler = StepLR(optimizer, step_size=1, gamma=train_config.gamma)
 
-# Start the training process
-results = train(
-    model,
-    train_dataloader,
-    None,
-    tokenizer,
-    optimizer,
-    scheduler,
-    train_config.gradient_accumulation_steps,
-    train_config,
-    None,
-    None,
-    None,
-    wandb_run=wandb_run,
-)
-
-print("Saving Models: ", train_config.output_dir)
-tokenizer.save_pretrained(train_config.output_dir)
-config.save_pretrained(train_config.output_dir)
-model.save_pretrained(train_config.output_dir)
+try:
+    results = train(
+        model,
+        train_dataloader,
+        None,
+        tokenizer,
+        optimizer,
+        scheduler,
+        train_config.gradient_accumulation_steps,
+        train_config,
+        None,
+        None,
+        None,
+        wandb_run=wandb_run,
+    )
+except Exception as e:
+    print(f"Training interrupted with error: {e}")
+    # Save model weights before exiting
+    print("Saving Models due to exception: ", train_config.output_dir)
+    model.save_pretrained(train_config.output_dir)
+    tokenizer.save_pretrained(train_config.output_dir)
+    config.save_pretrained(train_config.output_dir)
+    raise e
+finally:
+    print("Saving final model after training completion.")
+    model.save_pretrained(train_config.output_dir)
+    tokenizer.save_pretrained(train_config.output_dir)
+    config.save_pretrained(train_config.output_dir)
 
