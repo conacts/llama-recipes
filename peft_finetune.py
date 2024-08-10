@@ -15,6 +15,9 @@ train_config.context_length = 1024 if torch.cuda.get_device_properties(0).total_
 train_config.batching_strategy = "packing"
 train_config.output_dir = "meta-llama-chess"
 
+import wandb
+wandb_run = wandb.init(project="chess-gpt", config=train_config)
+
 from transformers import BitsAndBytesConfig
 config = BitsAndBytesConfig(
     load_in_8bit=True,
@@ -92,7 +95,7 @@ results = train(
     None,
     None,
     None,
-    wandb_run=True,
+    wandb_run=wandb_run,
 )
 
 model.save_pretrained(train_config.output_dir)
