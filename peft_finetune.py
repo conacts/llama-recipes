@@ -2,14 +2,19 @@ import torch
 from transformers import LlamaForCausalLM, AutoTokenizer, AutoConfig
 from llama_recipes.configs import train_config as TRAIN_CONFIG
 import os
+from datetime import datetime
+
+output_dir = "./meta-llama-chess-" + datetime.now().strftime("%Y-%m-%d")
 
 train_config = TRAIN_CONFIG()
-if os.path.exists("./meta-llama-chess"):
-    train_config.model_name = "./meta-llama-chess"
+if os.path.exists(output_dir):
+    train_config.model_name = output_dir
+    print("Using dir: ", output_dir)
 else:
     train_config.model_name = "meta-llama/Meta-Llama-3.1-8B"
+    print("Pulling from HF")
 
-train_config.num_epochs = 1
+train_config.num_epochs = 100
 train_config.run_validation = False
 train_config.gradient_accumulation_steps = 4
 train_config.batch_size_training = 1
@@ -18,7 +23,7 @@ train_config.use_fast_kernels = True
 train_config.use_fp16 = True
 train_config.context_length = 1024 if torch.cuda.get_device_properties(0).total_memory < 16e9 else 2048 # T4 16GB or A10 24GB
 train_config.batching_strategy = "packing"
-train_config.output_dir = "meta-llama-chess"
+train_config.output_dir = output_dir
 
 import wandb
 wandb_run = wandb.init(project="chess-gpt", name="8-9-2024", config=train_config)
