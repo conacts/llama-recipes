@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 @dataclass
 class train_config:
-    model_name: str="PATH/to/Model"
+    model_name: str="~/.cache/huggingface/models--meta-llama--Meta-Llama-3.1-8B/"
     tokenizer_name: str=None
     enable_fsdp: bool=False
     low_cpu_fsdp: bool=False

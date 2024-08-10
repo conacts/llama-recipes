@@ -29,7 +29,7 @@ def get_preprocessed_samsum(dataset_config, tokenizer, split):
         sample = {
             "input_ids": prompt + summary,
             "attention_mask" : [1] * (len(prompt) + len(summary)),
-            "labels": [-100] * len(prompt) + summary,
+            "labels": [-100] * len(prompt) + summary, # I'm using -100 as ignore_index, cross-entropy loss will ignore the loss for these tokens
             }
 
         return sample

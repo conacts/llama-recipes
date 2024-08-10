@@ -48,16 +48,14 @@ class InstructionDataset(Dataset):
         else:
             prompt = PROMPT_DICT["prompt_input"].format_map(ann)
         example = prompt + ann["output"]
-        prompt = torch.tensor(
-            self.tokenizer.encode(prompt), dtype=torch.int64
-        )
+        prompt = torch.tensor(self.tokenizer.encode(prompt), dtype=torch.int64)
         example = self.tokenizer.encode(example)
         example.append(self.tokenizer.eos_token_id)
-        example = torch.tensor(
-            example, dtype=torch.int64
-        )
+
+        # to tensor combined after bos & eos tokns have wrapped text
+        example = torch.tensor(example, dtype=torch.int64)
         labels = copy.deepcopy(example)
-        labels[: len(prompt)] = -1
+        labels[:len(prompt)] = -1
         example_mask = example.ge(0)
         label_mask = labels.ge(0)
         example[~example_mask] = 0
@@ -66,5 +64,5 @@ class InstructionDataset(Dataset):
         return {
             "input_ids": example.tolist(),
             "labels": labels.tolist(),
-            "attention_mask":example_mask.tolist(),
+            "attention_mask": example_mask.tolist(),
         }
