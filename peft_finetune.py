@@ -1,10 +1,14 @@
 import torch
 from transformers import LlamaForCausalLM, AutoTokenizer, AutoConfig
 from llama_recipes.configs import train_config as TRAIN_CONFIG
+import os
 
 train_config = TRAIN_CONFIG()
-# train_config.model_name = "meta-llama/Meta-Llama-3.1-8B" # pulls llama from hf
-train_config.model_name = "./meta-llama-chess" # pull locally
+if os.path.exists("./meta-llama-chess"):
+    train_config.model_name = "./meta-llama-chess"
+else:
+    train_config.model_name = "meta-llama/Meta-Llama-3.1-8B"
+
 train_config.num_epochs = 1
 train_config.run_validation = False
 train_config.gradient_accumulation_steps = 4
